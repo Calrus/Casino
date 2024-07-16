@@ -41,11 +41,16 @@
 </head>
 
 <body>
+    <div>
+        <h2>Balance: $<span id="balance">1000</span></h2>
+        <label for="bet-amount">Bet Amount: $</label>
+        <input type="number" id="bet-amount" value="100" min="1">
+    </div>
     <button class="button" onclick="deal()" id="deal-button">Deal</button>
     <button class="button" onclick="hit()" id="hit-button" disabled>Hit</button>
     <button class="button" onclick="stand()" id="stand-button" disabled>Stand</button>
     <button class="button" onclick="split()" disabled>Split</button>
-    <button class="button" onclick="doubleDown()" disabled>Double Down</button>
+    <button class="button" onclick="doubleDown()" id="double-button">Double Down</button>
 
     <div id="game-area">
         <div>
@@ -67,6 +72,8 @@
         let playerHand = [];
         let dealerHand = [];
         let dealerHidden = true;
+        let balance = 1000;
+        let betAmount = 0;
 
         function createDeck() {
             let suits = ['hearts', 'spades', 'clubs', 'diamonds'];
@@ -92,6 +99,15 @@
         }
 
         function deal() {
+            betAmount = parseInt(document.getElementById('bet-amount').value);
+            if (betAmount > balance) {
+                alert('Bet amount exceeds balance!');
+                return;
+            }
+
+            balance -= betAmount;
+            updateBalance();
+
             createDeck();
             shuffleDeck();
             playerHand = [];
@@ -169,7 +185,10 @@
             dealCard(playerHand);
             displayHands();
 
-            if (calculateHandValue(playerHand) > 21) {
+            if (calculateHandValue(playerHand) === 21) {
+                stand();
+            }
+            else if (calculateHandValue(playerHand) > 21) {
                 document.getElementById('result').innerText = 'You bust!';
                 disableButtons();
                 document.getElementById('deal-button').style.display = 'inline-block';
@@ -187,6 +206,8 @@
             determineWinner();
         }
 
+
+
         function determineWinner() {
             let playerValue = calculateHandValue(playerHand);
             let dealerValue = calculateHandValue(dealerHand);
@@ -194,17 +215,21 @@
 
             if (dealerValue > 21) {
                 resultText = 'Dealer busts, you win!';
+                balance += betAmount * 2;
             } else if (playerValue > dealerValue) {
                 resultText = 'You win!';
+                balance += betAmount * 2;
             } else if (playerValue < dealerValue) {
                 resultText = 'Dealer wins!';
             } else {
                 resultText = 'It\'s a tie!';
+                balance += betAmount;
             }
 
             document.getElementById('result').innerText = resultText;
             disableButtons();
             document.getElementById('deal-button').style.display = 'inline-block';
+            updateBalance();
         }
 
         function disableButtons() {
@@ -212,12 +237,18 @@
             document.getElementById('stand-button').disabled = true;
         }
 
+        function updateBalance() {
+            document.getElementById('balance').innerText = balance;
+        }
+
         function split() {
             // Add game logic for splitting pairs
         }
 
         function doubleDown() {
-            // Add game logic for doubling down
+            betAmount *= 2;
+            hit();
+            stand();
         }
     </script>
 </body>
