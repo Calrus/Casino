@@ -30,15 +30,22 @@
             font-size: 20px;
             margin-top: 20px;
         }
+
+        .card {
+            width: 100px;
+            /* Adjust size as needed */
+            height: auto;
+            display: inline-block;
+        }
     </style>
 </head>
 
 <body>
     <button class="button" onclick="deal()" id="deal-button">Deal</button>
-    <button class="button" onclick="hit()" id="hit-button">Hit</button>
-    <button class="button" onclick="stand()" id="stand-button">Stand</button>
-    <button class="button" onclick="split()">Split</button>
-    <button class="button" onclick="doubleDown()">Double Down</button>
+    <button class="button" onclick="hit()" id="hit-button" disabled>Hit</button>
+    <button class="button" onclick="stand()" id="stand-button" disabled>Stand</button>
+    <button class="button" onclick="split()" disabled>Split</button>
+    <button class="button" onclick="doubleDown()" disabled>Double Down</button>
 
     <div id="game-area">
         <div>
@@ -62,8 +69,8 @@
         let dealerHidden = true;
 
         function createDeck() {
-            let suits = ['Hearts', 'Spades', 'Clubs', 'Diamonds'];
-            let values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            let suits = ['hearts', 'spades', 'clubs', 'diamonds'];
+            let values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
             deck = [];
 
             for (let suit of suits) {
@@ -85,7 +92,6 @@
         }
 
         function deal() {
-            // Reset game state if deal is clicked again
             createDeck();
             shuffleDeck();
             playerHand = [];
@@ -93,7 +99,6 @@
             dealerHidden = true;
             document.getElementById('result').innerText = '';
 
-            // Initial deal
             dealCard(playerHand);
             dealCard(dealerHand);
             dealCard(playerHand);
@@ -101,7 +106,6 @@
 
             displayHands();
 
-            // Disable deal button and enable other buttons
             document.getElementById('deal-button').style.display = 'none';
             document.getElementById('hit-button').disabled = false;
             document.getElementById('stand-button').disabled = false;
@@ -112,9 +116,9 @@
             let aceCount = 0;
 
             for (let card of hand) {
-                if (card.value === 'J' || card.value === 'Q' || card.value === 'K') {
+                if (['jack', 'queen', 'king'].includes(card.value)) {
                     value += 10;
-                } else if (card.value === 'A') {
+                } else if (card.value === 'ace') {
                     value += 11;
                     aceCount += 1;
                 } else {
@@ -136,15 +140,23 @@
             let dealerCountDiv = document.getElementById('dealer-count');
             let playerCountDiv = document.getElementById('player-count');
 
+            dealerHandDiv.innerHTML = '';
+            playerHandDiv.innerHTML = '';
+
             if (dealerHidden) {
-                dealerHandDiv.innerHTML = `${dealerHand[0].value} of ${dealerHand[0].suit}, [Hidden]`;
+                dealerHandDiv.innerHTML = `<img src="images/${dealerHand[0].value}_of_${dealerHand[0].suit}.png" class="card">`;
+                dealerHandDiv.innerHTML += `<img src="images/back.png" class="card">`;
                 dealerCountDiv.innerHTML = `Count: ${calculateHandValue([dealerHand[0]])}`;
             } else {
-                dealerHandDiv.innerHTML = dealerHand.map(card => `${card.value} of ${card.suit}`).join(', ');
+                dealerHand.forEach(card => {
+                    dealerHandDiv.innerHTML += `<img src="images/${card.value}_of_${card.suit}.png" class="card">`;
+                });
                 dealerCountDiv.innerHTML = `Count: ${calculateHandValue(dealerHand)}`;
             }
 
-            playerHandDiv.innerHTML = playerHand.map(card => `${card.value} of ${card.suit}`).join(', ');
+            playerHand.forEach(card => {
+                playerHandDiv.innerHTML += `<img src="images/${card.value}_of_${card.suit}.png" class="card">`;
+            });
             playerCountDiv.innerHTML = `Count: ${calculateHandValue(playerHand)}`;
         }
 
@@ -167,7 +179,6 @@
         function stand() {
             revealDealerCard();
 
-            // Dealer hits until the value is 17 or more
             while (calculateHandValue(dealerHand) < 17) {
                 dealCard(dealerHand);
                 displayHands();
@@ -193,7 +204,6 @@
 
             document.getElementById('result').innerText = resultText;
             disableButtons();
-            // Show deal button
             document.getElementById('deal-button').style.display = 'inline-block';
         }
 
